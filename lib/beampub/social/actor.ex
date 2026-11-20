@@ -19,8 +19,8 @@ defmodule BeamPub.Social.Actor do
 
   ### API ###
 
-  def start_link(username) do
-    GenServer.start_link(__MODULE__, username)
+  def start_link(name) when is_atom(name) do
+    GenServer.start_link(__MODULE__, Atom.to_string(name), name: name)
   end
 
   # Bob (follower_pid) initie un suivi vers Alice (target_pid) via son propre Outbox
@@ -55,6 +55,13 @@ defmodule BeamPub.Social.Actor do
   def handle_cast({:inbox, activity}, state) do
     IO.puts("📥 [INBOX -> #{state.username}] Activité reçue : #{inspect(activity.__struct__)}")
     new_state = Inbox.handle(activity, state)
+
+    Phoenix.PubSub.broadcast(
+      BeamPub.PubSub,
+      "timeline:#{state.username}",
+      {:inbox_updated, new_state.inbox}
+    )
+
     {:noreply, new_state}
   end
 

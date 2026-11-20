@@ -7,7 +7,7 @@ defmodule BeamPub.Social.Actor.Inbox do
     #  Return it automatically without user confirmation
     accept = %Accept{
       id: new_id("accept"),
-      actor: self(),
+      actor: String.to_atom(state.username), # FIXME: change to more idiomatic
       object: follow
     }
 

@@ -24,3 +24,6 @@ beampub-*.tar
 
 # vscode
 .vscode
+
+# Ignore compiled frontend assets
+/priv/static/assets/
