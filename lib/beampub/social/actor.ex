@@ -55,7 +55,6 @@ defmodule BeamPub.Social.Actor do
   def handle_cast({:inbox, activity}, state) do
     IO.puts("📥 [INBOX -> #{state.username}] Activité reçue : #{inspect(activity.__struct__)}")
     new_state = Inbox.handle(activity, state)
-
     {:noreply, new_state}
   end
 
