@@ -8,6 +8,7 @@ defmodule BeamPub.Social.Actor do
   use GenServer
 
   alias BeamPub.Social.Actor.{Inbox, Outbox}
+  alias BeamPub.Social.Actor
 
   defstruct [
     :username,
@@ -19,22 +20,27 @@ defmodule BeamPub.Social.Actor do
 
   ### API ###
 
-  def start_link(name) when is_atom(name) do
-    GenServer.start_link(__MODULE__, Atom.to_string(name), name: name)
+  # a function that checks up the registry entry based ont he username
+  def via(username) do
+    {:via, Registry, {BeamPub.ActorRegistry, username}}
   end
 
-  # Bob (follower_pid) initie un suivi vers Alice (target_pid) via son propre Outbox
-  def follow(follower_pid, target_pid) do
-    GenServer.cast(follower_pid, {:outbox, {:follow, target_pid}})
+  def start_link(username) when is_binary(username) do
+    GenServer.start_link(__MODULE__, username, name: via(username))
+  end
+
+  # Bob (follower) initie un suivi vers Alice (followee) via son propre Outbox
+  def follow(follower, followee) do
+    GenServer.cast(Actor.via(follower), {:outbox, {:follow, followee}})
   end
 
   # actor_pid publie un contenu via son Outbox
-  def publish(actor_pid, content) do
-    GenServer.cast(actor_pid, {:outbox, {:publish, content}})
+  def publish(actor, content) do
+    GenServer.cast(Actor.via(actor), {:outbox, {:publish, content}})
   end
 
-  def get_inbox(actor_pid) do
-    GenServer.call(actor_pid, :get_inbox)
+  def get_inbox(actor) do
+    GenServer.call(Actor.via(actor), :get_inbox)
   end
 
   ### Server Callbacks ###

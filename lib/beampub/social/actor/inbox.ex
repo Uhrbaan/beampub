@@ -1,21 +1,22 @@
 defmodule BeamPub.Social.Actor.Inbox do
   alias BeamPub.ActivityPub.Activities.{Accept, Create, Follow}
+  alias BeamPub.Social.Actor
 
   # Public entry point called by BeamPub.Social.Actor
-  def handle(%Follow{actor: follower_pid} = follow, state) do
+  def handle(%Follow{actor: followee} = follow, state) do
     # ActivityPub specifies that a Follow MUST return an Accept activity
     #  Return it automatically without user confirmation
     accept = %Accept{
       id: new_id("accept"),
-      actor: String.to_atom(state.username), # FIXME: change to more idiomatic
+      actor: state.username,
       object: follow
     }
 
-    GenServer.cast(follower_pid, {:inbox, accept})
+    GenServer.cast(Actor.via(followee), {:inbox, accept})
 
     state
     |> record_inbox(follow)
-    |> Map.update!(:followers, &MapSet.put(&1, follower_pid))
+    |> Map.update!(:followers, &MapSet.put(&1, followee))
   end
 
   def handle(%Create{} = create, state), do: record_inbox(state, create)

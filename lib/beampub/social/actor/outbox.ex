@@ -1,9 +1,10 @@
 defmodule BeamPub.Social.Actor.Outbox do
   alias BeamPub.ActivityPub.Activities.{Create, Follow}
   alias BeamPub.ActivityPub.Objects.Note
+  alias BeamPub.Social.Actor
 
   def handle({:follow, target}, state) do
-    me = String.to_atom(state.username)
+    me = state.username
 
     activity = %Follow{
       id: "follow-#{System.unique_integer([:positive])}",
@@ -11,8 +12,9 @@ defmodule BeamPub.Social.Actor.Outbox do
       object: target
     }
 
-    GenServer.cast(target, {:inbox, activity})
+    GenServer.cast(Actor.via(target), {:inbox, activity})
 
+    # FIXME: right now followee does not wait for an accept response before adding the follower
     %{state | outbox: [activity | state.outbox], following: MapSet.put(state.following, target)}
   end
 
@@ -31,7 +33,7 @@ defmodule BeamPub.Social.Actor.Outbox do
     }
 
     Enum.each(state.followers, fn follower ->
-      GenServer.cast(follower, {:inbox, activity})
+      GenServer.cast(Actor.via(follower), {:inbox, activity})
     end)
 
     %{state | outbox: [activity | state.outbox]}

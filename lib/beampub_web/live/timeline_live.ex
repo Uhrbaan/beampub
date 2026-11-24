@@ -11,7 +11,11 @@ defmodule BeamPubWeb.TimelineLive do
     end
 
     # Checks if the :alice process is alive via Process.whereis/1
-    inbox = if Process.whereis(:alice), do: Actor.get_inbox(:alice), else: []
+    inbox =
+      case Registry.lookup(BeamPub.ActorRegistry, "alice") do
+        [{_pid, _}] -> Actor.get_inbox("alice")
+        [] -> []
+      end
 
     {:ok, assign(socket, inbox: inbox)}
   end

@@ -102,3 +102,23 @@ PHX_HOST=your-subdomain.ngrok-free.app iex -S mix phx.server
 ```bash
 mix test
 ```
+
+--- 
+
+Right now to test the program out, first run the web server: 
+
+```sh 
+iex -S mix phx.server
+```
+
+and then inside of the iex env, you can start two actors manually and send messages between them (notice that the actor that displays on the website is alice):
+
+```ex
+alias BeamPub.Social.Actor
+
+Actor.start_link("alice")
+Actor.start_link("bob")
+
+Actor.follow("alice", "bob")
+Actor.publish("bob", "Hello Alice! Live from iex!")
+```

@@ -13,6 +13,7 @@ defmodule BeamPub.Application do
       {Phoenix.PubSub, name: BeamPub.PubSub},
       # Start a worker by calling: BeamPub.Worker.start_link(arg)
       # {BeamPub.Worker, arg},
+      {Registry, keys: :unique, name: BeamPub.ActorRegistry}, # load the registry, which is responsible to give the pid of other processes / actors
       # Start to serve requests, typically the last entry
       BeamPubWeb.Endpoint
     ]
